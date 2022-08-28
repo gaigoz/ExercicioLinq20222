@@ -4,6 +4,7 @@ using Persistencia.Repositorio;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace MoviesConsoleApp
 {
@@ -19,28 +20,131 @@ namespace MoviesConsoleApp
             Console.WriteLine();
             Console.WriteLine("1. Listar o nome de todos personagens desempenhados por um determinado ator, incluindo a informação de qual o título do filme e o diretor");
 
+            String ator = "Harrison Ford";
+            var query1 = from p in _db.Characters
+                         where p.Actor.Name == ator            
+
+                         select new
+                         {
+                            p.Movie.Title,
+                            p.Movie.Director,
+                            p.Character
+                         };
+                        
+
+            foreach (var res in query1)
+            {
+
+                Console.WriteLine("\t {0} - {1}  - {2} ", res.Character, res.Title, res.Director);
+            }
+
 
             Console.WriteLine();
             Console.WriteLine("2. Mostrar o nome e idade de todos atores que desempenharam um determinado personagem(por exemplo, quais os atores que já atuaram como '007' ?");
 
+            String personagem = "James Bond";
+            var query2 = from p in _db.Characters
+                         where p.Character == personagem
+                         select new
+                         {
+                             p.Actor.Name,
+                             Age = DateTime.Now.Year - p.Actor.DateBirth.Year
+                         };
+            
+            foreach (var res in query2)
+            {
+
+                Console.WriteLine("\t {0} - {1}", res.Name, res.Age);
+            }
 
             Console.WriteLine();
             Console.WriteLine("3. Informar qual o ator desempenhou mais vezes um determinado personagem(por exemplo: qual o ator que realizou mais filmes como o 'agente 007'");
 
+            //porque não printa?
+            var query3 = (from p in _db.Characters
+                          where p.Character == "James Bond"
+                          orderby p.Actor.Name
+                          select p).Take(2).ToList();
+
+            foreach (var res in query3)
+            {
+                Console.WriteLine("\t {0}", res);
+            }
+            //Porque não funciona??? printa linhas em branco
+            //Console.WriteLine(query3);
+
             Console.WriteLine();
             Console.WriteLine("4. Mostrar o nome e a data de nascimento do ator mais idoso");
+
+            var idoso = _db.Actors.Min(d => d.DateBirth);
+            var query4 =  from p in _db.Characters
+                          where p.Actor.DateBirth == idoso
+                          select new {
+                                p.Actor.Name,
+                                Birth = p.Actor.DateBirth.ToShortDateString(),
+                                Age = DateTime.Now.Year - p.Actor.DateBirth.Year
+                          };
+
+            foreach (var res in query4)
+            {
+
+                Console.WriteLine("\t {0} - {1} - {2}", res.Name, res.Birth, res.Age);
+            }
 
             Console.WriteLine();
             Console.WriteLine("5. Mostrar o nome e a data de nascimento do ator mais novo a atuar em um determinado gênero");
 
+            var novo = _db.Actors.Max(d => d.DateBirth);
+            var query5 = from p in _db.Characters
+                         where p.Actor.DateBirth == novo
+                         select new
+                         {
+                             p.Actor.Name,
+                             Birth = p.Actor.DateBirth.ToShortDateString(),
+                             Age = DateTime.Now.Year - p.Actor.DateBirth.Year
+                         };
+            foreach (var res in query5)
+            {
+
+                Console.WriteLine("\t {0} - {1} - {2}", res.Name, res.Birth, res.Age);
+            }
+
             Console.WriteLine();
             Console.WriteLine("6. Mostrar o valor médio das avaliações dos filmes de um determinado diretor");
+
+            String diretor = "Steven Spielberg";
+            var query6 = (from p in _db.Movies
+                          where p.Director == diretor
+                          select p.Rating).Average();
+            
+                Console.WriteLine("\t {0} - {1}", diretor, query6);
+           
 
             Console.WriteLine();
             Console.WriteLine("7. Qual o elenco do filme melhor avaliado ?");
 
+            var bestEvaluate = _db.Movies.Max(r => r.Rating);
+           // var query7 = (from p in _db.Characters
+          //                 group p by p.Movie.Rating into ratings
+         //                  orderby ratings.Max(r => r.Movie.Rating) descending
+        //                   select ratings.Key).First();
+       //???????????????
+      //                 Console.WriteLine("\t {0}",query7);
+
             Console.WriteLine();
             Console.WriteLine("8. Qual o elenco do filme com o maior faturamento?");
+
+            var query8 = from p in _db.Characters
+                         where p.Movie.Rating == bestEvaluate
+                         select new
+                         {
+                            Name = p.Actor.Name
+                         };
+            //Também não funciona
+            foreach (var res in query8)
+            {
+                Console.WriteLine("\t {0}", res.Name);
+            }
 
             Console.WriteLine();
             Console.WriteLine("9. Gerar um relatório de aniversariantes, agrupando os atores pelo mês de aniverário.");
