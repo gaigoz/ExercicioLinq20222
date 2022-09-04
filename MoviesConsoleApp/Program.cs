@@ -60,18 +60,20 @@ namespace MoviesConsoleApp
             Console.WriteLine();
             Console.WriteLine("3. Informar qual o ator desempenhou mais vezes um determinado personagem(por exemplo: qual o ator que realizou mais filmes como o 'agente 007'");
 
-            //porque não printa?
-            var query3 = (from p in _db.Characters
-                          where p.Character == "James Bond"
-                          orderby p.Actor.Name
-                          select p).Take(2).ToList();
+            var query3  = from p in _db.Characters
+                           where p.Character == "James Bond"
+                           group p by p.Actor.Name into grpName
+                           orderby grpName.Count() descending
+                           select new
+                           {
+                               Chave = grpName.Key,
+                               Numero = grpName.Count()
+                           };
 
             foreach (var res in query3)
             {
-                Console.WriteLine("\t {0}", res);
+                Console.WriteLine("\t {0} {1}", res.Chave, res.Numero);
             }
-            //Porque não funciona??? printa linhas em branco
-            //Console.WriteLine(query3);
 
             Console.WriteLine();
             Console.WriteLine("4. Mostrar o nome e a data de nascimento do ator mais idoso");
