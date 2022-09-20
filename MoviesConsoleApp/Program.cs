@@ -60,18 +60,20 @@ namespace MoviesConsoleApp
             Console.WriteLine();
             Console.WriteLine("3. Informar qual o ator desempenhou mais vezes um determinado personagem(por exemplo: qual o ator que realizou mais filmes como o 'agente 007'");
 
-            //porque não printa?
-            var query3 = (from p in _db.Characters
-                          where p.Character == "James Bond"
-                          orderby p.Actor.Name
-                          select p).Take(2).ToList();
+            var query3  = from p in _db.Characters
+                           where p.Character == "James Bond"
+                           group p by p.Actor.Name into grpName
+                           orderby grpName.Count() descending
+                           select new
+                           {
+                               Chave = grpName.Key,
+                               Numero = grpName.Count()
+                           };
 
             foreach (var res in query3)
             {
-                Console.WriteLine("\t {0}", res);
+                Console.WriteLine("\t {0} {1}", res.Chave, res.Numero);
             }
-            //Porque não funciona??? printa linhas em branco
-            //Console.WriteLine(query3);
 
             Console.WriteLine();
             Console.WriteLine("4. Mostrar o nome e a data de nascimento do ator mais idoso");
@@ -124,23 +126,30 @@ namespace MoviesConsoleApp
             Console.WriteLine("7. Qual o elenco do filme melhor avaliado ?");
 
             var bestEvaluate = _db.Movies.Max(r => r.Rating);
-           // var query7 = (from p in _db.Characters
-          //                 group p by p.Movie.Rating into ratings
-         //                  orderby ratings.Max(r => r.Movie.Rating) descending
-        //                   select ratings.Key).First();
-       //???????????????
-      //                 Console.WriteLine("\t {0}",query7);
+            var query7 = from p in _db.Characters
+                         where p.Movie.Rating == bestEvaluate
+                         select new
+                         {
+                             Name = p.Actor.Name
+                         };
+
+            foreach (var res in query7)
+            {
+                Console.WriteLine("\t {0}", res.Name);
+            }
 
             Console.WriteLine();
             Console.WriteLine("8. Qual o elenco do filme com o maior faturamento?");
 
+            var gross = _db.Movies.Max(g => g.Gross);
+ 
             var query8 = from p in _db.Characters
-                         where p.Movie.Rating == bestEvaluate
+                         where p.Movie.Gross == gross
                          select new
                          {
                             Name = p.Actor.Name
                          };
-            //Também não funciona
+           
             foreach (var res in query8)
             {
                 Console.WriteLine("\t {0}", res.Name);
